@@ -54,7 +54,7 @@ mkdir -p static | indent
 ./$HUGO_BIN --theme=hugo_theme_robust -D
 
 status "Checking site build..."
-ls -l ./public
+
 
 # TODO: Remove project files except public
 
