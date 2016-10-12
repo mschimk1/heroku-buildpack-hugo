@@ -1,7 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# bin/release <build-dir>
 
-cat << EOF
----
-default_process_types:
-  web: "cd public && python -m SimpleHTTPServer \$PORT"
-EOF
+echo "--- {}"

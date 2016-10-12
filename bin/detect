@@ -2,12 +2,19 @@
 
 BUILD_DIR=$1
 
-CONFIG_FILE="`ls $BUILD_DIR | grep config`"
+BP_DIR=$(cd $(dirname $0); cd ..; pwd)
+BP_DIR_BIN=$BP_DIR/bin
 
-if [ -z $CONFIG_FILE ]; then
-  echo "\n-----> Hugo expects to find a config file in the root of the source directory! please include a config.toml, config.yaml or config.json file"
-  exit 1
+source $BP_DIR_BIN/common.sh
+
+CONFIG_FILE_PATTERN=config
+
+CONFIG_FILE=`ls $BUILD_DIR 2> /dev/null | grep $CONFIG_FILE_PATTERN`
+
+if [[ ! -z $CONFIG_FILE ]]
+then
+  echo "Hugo" && exit 0
+else
+  status "Hugo configuration file not found in project directory. Exiting!"
+  echo "no" && exit 1
 fi
-
-echo "Hugo"
-exit 0

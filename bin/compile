@@ -1,48 +1,62 @@
 #!/bin/sh
 # bin/compile <build-dir> <cache-dir>
-set -e
+set -euf -o pipefail
 
-# Used to format the output based on heroku guidelines
-# https://devcenter.heroku.com/articles/buildpack-api#style
-indent() {
-  RE="s/^/       /"
-  sed $SED_FLAG "$RE"
-}
 
 BUILD_DIR=$1
 CACHE_DIR=$2
 
 # Hugo version
-VERSION="0.15"
+DEFAULT_HUGO_VERSION="0.16"
 
-# Hugo URL ( download from GH builds )
-ARCHIVE_NAME=hugo_${VERSION}_linux_amd64
-FILE_NAME=${ARCHIVE_NAME}.tar.gz
-HUGO_PACKAGE=https://github.com/spf13/hugo/releases/download/v${VERSION}/${FILE_NAME}
+compile_buildpack_dir=$(cd $(dirname $0); cd ..; pwd)
+compile_buildpack_bin=$compile_buildpack_dir/bin
 
-# Store the hugo package in the cache_dir ( persistent across builds )
+source $compile_buildpack_bin/common.sh
+
+# Log supported/default Hugo version
+status "Default supported Hugo version is $DEFAULT_HUGO_VERSION"
+
+# Determine Hugo version for the app
+if [ -f $BUILD_DIR/.hugo-version ]; then
+  HUGO_VERSION=$(cat $BUILD_DIR/.hugo-version | sed -e "s/hugo-//")
+else
+  HUGO_VERSION=$DEFAULT_HUGO_VERSION
+fi
+
+HUGO_ARCHIVE_NAME_VERSION="hugo_${HUGO_VERSION}_linux-64bit"
+HUGO_FILE_NAME=${HUGO_ARCHIVE_NAME_VERSION}.tgz
+# Hugo archive URL ( download from github)
+HUGO_PACKAGE=https://github.com/spf13/hugo/releases/download/v${HUGO_VERSION}/${HUGO_FILE_NAME}
+
 mkdir -p $CACHE_DIR
-if ! [ -e $CACHE_DIR/$FILE_NAME ]; then
-  echo "\n-----> Fetching Hugo ${VERSION} binaries at ${HUGO_PACKAGE}"
-  curl $HUGO_PACKAGE -L -s -o $CACHE_DIR/$FILE_NAME | indent
+cd $CACHE_DIR
+
+# Download and unpack Hugo binaries
+if [[ ! -d "$HUGO_ARCHIVE_NAME_VERSION" ]]; then
+  mkdir -p $HUGO_ARCHIVE_NAME_VERSION | indent
+  status "Downloading Hugo binary archive version ${HUGO_VERSION} from ${HUGO_PACKAGE}..."
+  curl $HUGO_PACKAGE -L -s -o $HUGO_FILE_NAME | indent
+  tar xz -C $HUGO_ARCHIVE_NAME_VERSION -f $HUGO_FILE_NAME
 fi
 
-# Extract the binary in the working directory
-echo "\n-----> Extracting Hugo ${VERSION} binaries to ${BUILD_DIR}/vendor/hugo"
-mkdir -p $CACHE_DIR/$ARCHIVE_NAME | indent
-tar -zxvf $CACHE_DIR/$FILE_NAME -C $CACHE_DIR | indent
-mv $CACHE_DIR/$ARCHIVE_NAME/$ARCHIVE_NAME $BUILD_DIR/hugo | indent
+cp $HUGO_ARCHIVE_NAME_VERSION/hugo $BUILD_DIR/$HUGO_ARCHIVE_NAME_VERSION | indent
 
-# Fetch a theme specified in the .hugotheme file
-if [ -e $BUILD_DIR/.hugotheme ]; then
-  echo "\n-----> Getting the theme"
-  THEME_URL="`cat $BUILD_DIR/.hugotheme`"
-  rm -rf $BUILD_DIR/themes && mkdir $BUILD_DIR/themes && cd $BUILD_DIR/themes
-  git clone $THEME_URL
-fi
+status "Installing Hugo theme..."
+mkdir -p $BUILD_DIR/themes
+cd $BUILD_DIR/themes
+#git clone 
 
-# Build the site
-echo "\n-----> Building the site"
 cd $BUILD_DIR
+status "Generating the site..."
 mkdir -p static | indent
-./hugo | indent
+./$HUGO_ARCHIVE_NAME_VERSION | indent
+
+# TODO: Remove project files except public
+
+if [[ ! -e $BUILD_DIR/Staticfile ]]; then
+# Create config file for static build pack
+cat <<EOF >$BUILD_DIR/Staticfile
+root: public
+EOF
+fi
