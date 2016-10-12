@@ -7,7 +7,7 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 
 # Hugo version
-DEFAULT_HUGO_VERSION="0.16"
+DEFAULT_HUGO_VERSION="0.17"
 
 compile_buildpack_dir=$(cd $(dirname $0); cd ..; pwd)
 compile_buildpack_bin=$compile_buildpack_dir/bin
