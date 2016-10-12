@@ -2,6 +2,7 @@
 # bin/compile <build-dir> <cache-dir>
 set -euf
 
+
 BUILD_DIR=$1
 CACHE_DIR=$2
 
