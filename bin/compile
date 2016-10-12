@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir>
-set -euf
+set -euf -o pipefail
 
 
 BUILD_DIR=$1
