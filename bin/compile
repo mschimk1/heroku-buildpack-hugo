@@ -50,7 +50,7 @@ cd $BUILD_DIR/themes
 cd $BUILD_DIR
 status "Generating the site..."
 mkdir -p static | indent
-./$HUGO_ARCHIVE_NAME_VERSION | indent
+./$HUGO_ARCHIVE_NAME_VERSION --theme=hugo_theme_robust -D
 
 # TODO: Remove project files except public
 
