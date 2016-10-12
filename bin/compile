@@ -40,6 +40,10 @@ if [[ ! -d "$HUGO_ARCHIVE_NAME_VERSION" ]]; then
   tar xz -C $HUGO_ARCHIVE_NAME_VERSION -f $HUGO_FILE_NAME
 fi
 
+if [[ ! -f $HUGO_ARCHIVE_NAME_VERSION/hugo ]]; then
+  tar xz -C $HUGO_ARCHIVE_NAME_VERSION -f $HUGO_FILE_NAME
+fi
+
 cp $HUGO_ARCHIVE_NAME_VERSION/hugo $BUILD_DIR/$HUGO_ARCHIVE_NAME_VERSION | indent
 
 status "Installing Hugo theme..."
