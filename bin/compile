@@ -26,6 +26,7 @@ fi
 
 HUGO_ARCHIVE_NAME_VERSION="hugo_${HUGO_VERSION}_linux-64bit"
 HUGO_FILE_NAME=${HUGO_ARCHIVE_NAME_VERSION}.tar.gz
+HUGO_BIN=hugo_0.17_linux_amd64
 # Hugo archive URL ( download from github)
 HUGO_PACKAGE=https://github.com/spf13/hugo/releases/download/v${HUGO_VERSION}/${HUGO_FILE_NAME}
 
@@ -40,11 +41,7 @@ if [[ ! -d "$HUGO_ARCHIVE_NAME_VERSION" ]]; then
   tar xz -C $HUGO_ARCHIVE_NAME_VERSION -f $HUGO_FILE_NAME
 fi
 
-if [[ ! -f $HUGO_ARCHIVE_NAME_VERSION/hugo ]]; then
-  tar xz -C $HUGO_ARCHIVE_NAME_VERSION -f $HUGO_FILE_NAME
-fi
-
-cp $HUGO_ARCHIVE_NAME_VERSION/hugo $BUILD_DIR/$HUGO_ARCHIVE_NAME_VERSION | indent
+cp $HUGO_ARCHIVE_NAME_VERSION/$HUGO_BIN/$HUGO_BIN $BUILD_DIR/ | indent
 
 status "Installing Hugo theme..."
 mkdir -p $BUILD_DIR/themes
@@ -54,7 +51,10 @@ cd $BUILD_DIR/themes
 cd $BUILD_DIR
 status "Generating the site..."
 mkdir -p static | indent
-./$HUGO_ARCHIVE_NAME_VERSION --theme=hugo_theme_robust -D
+./$HUGO_BIN --theme=hugo_theme_robust -D
+
+status "Checking site build..."
+ls -l ./public
 
 # TODO: Remove project files except public
 
