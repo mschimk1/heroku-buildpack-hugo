@@ -25,7 +25,7 @@ else
 fi
 
 HUGO_ARCHIVE_NAME_VERSION="hugo_${HUGO_VERSION}_linux-64bit"
-HUGO_FILE_NAME=${HUGO_ARCHIVE_NAME_VERSION}.tgz
+HUGO_FILE_NAME=${HUGO_ARCHIVE_NAME_VERSION}.tar.gz
 # Hugo archive URL ( download from github)
 HUGO_PACKAGE=https://github.com/spf13/hugo/releases/download/v${HUGO_VERSION}/${HUGO_FILE_NAME}
 
