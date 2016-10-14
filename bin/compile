@@ -60,8 +60,8 @@ set -e
 
 if [[ ! -f $BUILD_DIR/boot.sh ]]; then
 cat <<EOF >$BUILD_DIR/boot.sh
-echo "Starting Hugo server..."
-exec ./$HUGO_BIN server --port 80 --appendPort false
+echo "Starting Hugo server on port $PORT"
+exec ./$HUGO_BIN server --port $PORT --appendPort false
 EOF
 fi
 chmod a+x $BUILD_DIR/boot.sh
