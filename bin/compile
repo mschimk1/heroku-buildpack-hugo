@@ -42,14 +42,13 @@ fi
 HUGO_BIN_PATH=$(find `tar -tzf $HUGO_FILE_NAME | head -1 | cut -f1 -d"/"` -type f -name \*hugo\*)
 HUGO_BIN="${HUGO_BIN_PATH##*/}"
 
-mkdir -p $BUILD_DIR/bin
-cp $HUGO_BIN_PATH $BUILD_DIR/bin | indent
+cp $HUGO_BIN_PATH $BUILD_DIR | indent
 
 popd >/dev/null
 
 set +e
 status "Testing Hugo $HUGO_BIN"
-$BUILD_DIR/bin/$HUGO_BIN version >/dev/null 2>&1
+$BUILD_DIR/$HUGO_BIN version >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   error "Hugo installation failed"
 else 
@@ -59,9 +58,9 @@ set -e
 
 # TODO: Remove project files except public
 
-if [[ ! -f $BUILD_DIR/bin/boot.sh ]]; then
-cat <<EOF >$BUILD_DIR/bin/boot.sh
+if [[ ! -f $BUILD_DIR/boot.sh ]]; then
+cat <<EOF >$BUILD_DIR/boot.sh
 ./$HUGO_BIN server --port 80 --appendPort false
 EOF
 fi
-chmod a+x $BUILD_DIR/bin/boot.sh
+chmod a+x $BUILD_DIR/boot.sh
