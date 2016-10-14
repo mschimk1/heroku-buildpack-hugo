@@ -2,65 +2,65 @@
 # bin/compile <build-dir> <cache-dir>
 set -euf -o pipefail
 
-
 BUILD_DIR=$1
 CACHE_DIR=$2
-
-# Hugo version
-DEFAULT_HUGO_VERSION="0.17"
 
 compile_buildpack_dir=$(cd $(dirname $0); cd ..; pwd)
 compile_buildpack_bin=$compile_buildpack_dir/bin
 
 source $compile_buildpack_bin/common.sh
 
-# Log supported/default Hugo version
-status "Default supported Hugo version is $DEFAULT_HUGO_VERSION"
-
 # Determine Hugo version for the app
 if [ -f $BUILD_DIR/.hugo-version ]; then
   HUGO_VERSION=$(cat $BUILD_DIR/.hugo-version | sed -e "s/hugo-//")
 else
-  HUGO_VERSION=$DEFAULT_HUGO_VERSION
+  HUGO_VERSION=latest
 fi
 
-HUGO_ARCHIVE_NAME_VERSION="hugo_${HUGO_VERSION}_linux-64bit"
-HUGO_FILE_NAME=${HUGO_ARCHIVE_NAME_VERSION}.tar.gz
-HUGO_BIN=hugo_0.17_linux_amd64
+status "Hugo version $HUGO_VERSION"
+
+if [ "$HUGO_VERSION" = "latest" ]; then
+  HUGO_GITHUB_URL=https://api.github.com/repos/spf13/hugo/releases/$HUGO_VERSION
+else
+  HUGO_GITHUB_URL=https://api.github.com/repos/spf13/hugo/releases/tags/v$HUGO_VERSION
+fi
+
 # Hugo archive URL ( download from github)
-HUGO_PACKAGE=https://github.com/spf13/hugo/releases/download/v${HUGO_VERSION}/${HUGO_FILE_NAME}
+HUGO_PACKAGE=`curl -s $HUGO_GITHUB_URL | grep -i "browser_download_url.*Linux.*64bit" | awk -F '"' '{ print $4 }'`
+HUGO_FILE_NAME=`echo $HUGO_PACKAGE | awk -F"/" '{print $NF}'`
 
 mkdir -p $CACHE_DIR
-cd $CACHE_DIR
+pushd $CACHE_DIR >/dev/null
 
 # Download and unpack Hugo binaries
-if [[ ! -d "$HUGO_ARCHIVE_NAME_VERSION" ]]; then
-  mkdir -p $HUGO_ARCHIVE_NAME_VERSION | indent
-  status "Downloading Hugo binary archive version ${HUGO_VERSION} from ${HUGO_PACKAGE}..."
+if [[ ! -f "$HUGO_FILE_NAME" ]]; then
+  status "Downloading Hugo $HUGO_PACKAGE"
   curl $HUGO_PACKAGE -L -s -o $HUGO_FILE_NAME | indent
-  tar xz -C $HUGO_ARCHIVE_NAME_VERSION -f $HUGO_FILE_NAME
+  tar xz -f $HUGO_FILE_NAME
 fi
 
-cp $HUGO_ARCHIVE_NAME_VERSION/$HUGO_BIN/$HUGO_BIN $BUILD_DIR/ | indent
+HUGO_BIN_PATH=$(find `tar -tzf $HUGO_FILE_NAME | head -1 | cut -f1 -d"/"` -type f -name \*hugo\*)
+HUGO_BIN="${HUGO_BIN_PATH##*/}"
 
-status "Installing Hugo theme..."
-mkdir -p $BUILD_DIR/themes
-cd $BUILD_DIR/themes
-#git clone 
+mkdir -p $BUILD_DIR/bin
+cp $HUGO_BIN_PATH $BUILD_DIR/bin | indent
 
-cd $BUILD_DIR
-status "Generating the site..."
-mkdir -p static | indent
-./$HUGO_BIN --theme=hugo_theme_robust -D
+popd >/dev/null
 
-status "Checking site build..."
-
+set +e
+status "Testing Hugo $HUGO_BIN"
+$BUILD_DIR/bin/$HUGO_BIN version >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+  error "Hugo installation failed"
+else 
+  status "Hugo is ready to go"
+fi
+set -e
 
 # TODO: Remove project files except public
 
-if [[ ! -e $BUILD_DIR/Staticfile ]]; then
-# Create config file for static build pack
-cat <<EOF >$BUILD_DIR/Staticfile
-root: public
+if [[ ! -f $BUILD_DIR/bin/boot.sh ]]; then
+cat <<EOF >$BUILD_DIR/bin/boot.sh
+./$HUGO_BIN server --port 80 --appendPort false
 EOF
 fi

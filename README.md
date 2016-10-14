@@ -19,8 +19,9 @@ The theme for the site must be specified in the Hugo [configuration file](https:
 theme = "purehugo"
 ```
 
-To bump the Hugo version just add a `.hugo-version` file in the root directory
-of your site with the target Hugo release version number.
+The buildpack downloads and installs the latest Hugo release. To fix the Hugo
+version number just add a `.hugo-version` file in the root directory of your
+site with the target Hugo release version number.
 
 ***Example .hugo-version file contents***
 
