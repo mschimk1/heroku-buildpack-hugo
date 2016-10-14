@@ -70,5 +70,5 @@ cat <<EOF >$BUILD_DIR/Procfile
 web: ./$HUGO_BIN server --port 80 --appendPort false
 EOF
 fi
-echo "Listing..."
-ls -l
+
+ls -l app
