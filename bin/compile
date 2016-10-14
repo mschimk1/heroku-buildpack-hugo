@@ -64,3 +64,4 @@ cat <<EOF >$BUILD_DIR/bin/boot.sh
 ./$HUGO_BIN server --port 80 --appendPort false
 EOF
 fi
+chmod a+x $BUILD_DIR/bin/boot.sh

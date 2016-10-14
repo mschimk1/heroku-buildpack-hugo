@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 # bin/release <build-dir>
+
 echo -e "---\ndefault_process_types:\n  web: sh $BUILD_DIR/bin/boot.sh"
