@@ -61,7 +61,8 @@ set +u
 if [[ ! -f $BUILD_DIR/boot.sh ]]; then
 cat <<EOF >$BUILD_DIR/boot.sh
 echo "Starting Hugo server on port $PORT"
-exec ./$HUGO_BIN server --port $PORT --appendPort false
+echo "Port: $VCAP_APP_PORT"
+exec ./$HUGO_BIN server --port $VCAP_APP_PORT --appendPort false -D
 EOF
 fi
 chmod a+x $BUILD_DIR/boot.sh
